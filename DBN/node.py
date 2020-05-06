@@ -13,7 +13,7 @@ class Node:
         self.token = token  #TODO: add verficiation of nodes
         self.socket = BluetoothSocket(RFCOMM)
         self.neighbors = [] # A list of neighbors that are nearby
-        self.starting_prefix = if starting_prefix !=  3: "VVV"
+        self.starting_prefix = starting_prefix
         self.server_limits = 3
         self.server_port = 3
         self.recv_limit = 2048
@@ -46,7 +46,7 @@ class Node:
 
     def setup_server(self):
         try:
-            self.server_address = self.start_prefix+"-"+uuid.getnode()
+            self.server_address = self.starting_prefix+"-"+str(uuid.getnode())
             self.socket.bind((self.server_address, self.server_port))
             self.socket.listen(self.server_limits)
             print("Server has been setup")        
@@ -81,13 +81,4 @@ class Node:
             self.socket.send(str(self.new_topic))
             self.new_topic = {}
 
-    '''
-    Comeback because you would need to ask each node for this info 
-    def node_list(self):
-        print("| Node name | connection status | Server Port |")
-        print("-----------------------------------------------")
-        print("|"+self.server_address+"|"+"Current NODE |"+self.server_port+"|")
-        for nodes in self.connection:
-            print("|"+nodes.+)
-     '''   
 

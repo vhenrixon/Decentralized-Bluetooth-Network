@@ -24,22 +24,32 @@ class Node:
         self.new_topic = {}
         self.key = jwk.JWK.generate(kty='RSA', size=2048)
 
+    def setup(self):
+        print(" -- Setting up Node -- ")
+        self.setup_server()
+        self.connect_to_neighbors()
+
     def connect_to_neighbors(self):
         # All servers should have keyboard in there name
+        self.find_neighbors()
+        print("Connecting to Neighbors")
         for node in neighbors:
             self.socket.connect((node, self.server_port))
 
     def find_neighbors(self):
         nearby_devices = discover_devices()
+        print(" Finding Neighbors")
         for addr in nearby_devices: 
             if lookup_name(addr)[:3] == self.starting_prefix:
+                print("Found: "+lookup_name(addr))
                 self.neighbors.append(addr)
 
     def setup_server(self):
         try:
             self.server_address = self.start_prefix+"-"+uuid.getnode()
             self.socket.bind((self.server_address, self.server_port))
-            self.socket.listen(self.server_limits)        
+            self.socket.listen(self.server_limits)
+            print("Server has been setup")        
         except BluetoothError:
             #TODO add a error 
             pass
@@ -56,7 +66,7 @@ class Node:
                 previous = claim
             else: 
                 if current_topic['uuid'] != claim['uuid']:
-                    self.currrent_topic = claim
+                    self.current_topic = claim
                     # TODO: write a system that determines which to choose either the claim or the current_topic
                     
     def send_message(self, message):

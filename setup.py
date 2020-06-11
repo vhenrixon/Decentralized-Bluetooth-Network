@@ -16,7 +16,7 @@ setup(
     long_description=long_description,
     entry_points={
         'console_scripts': [
-            'note = DBN.main:main'
+            'DBN = DBN.main:main'
         ]
     },
     install_requires=[

@@ -4,7 +4,7 @@ import json
 import ast
 import python_jwt as jwt, jwcrypto.jwk as jwk, datetime
 import uuid 
-
+import time
 
 class Node:
 
@@ -19,6 +19,7 @@ class Node:
         self.recv_limit = 2048
         self.server_address = None 
         self.connections = []
+        self.client_connections = []
         self.current_topic = {}
         self.change_flag = False
         self.new_topic = {}
@@ -33,14 +34,19 @@ class Node:
         # All servers should have keyboard in there name
         self.find_neighbors()
         print("Connecting to Neighbors")
-        for node in neighbors:
-            self.socket.connect((node, self.server_port))
+        if len(self.neighbors) > 0:
+            for node in self.neighbors:
+                if node not in self.connections:
+                    self.socket.connect((node, self.server_port))
+                    self.connections.append(node)
+        else:
+            print("No Neighbors found")
 
     def find_neighbors(self):
         nearby_devices = discover_devices()
         print(" Finding Neighbors")
         for addr in nearby_devices: 
-            if lookup_name(addr)[:3] == self.starting_prefix:
+            if lookup_name(addr)[:3] == self.starting_prefix and addr not in self.neighbors:
                 print("Found: "+lookup_name(addr))
                 self.neighbors.append(addr)
 
@@ -57,9 +63,9 @@ class Node:
 
     def _client_tick(self):
         conn, addr = self.socket.accept()
-        self.connections.append(conn)
+        self.client_connections.append(conn)
         previous = None
-        for node in connections: 
+        for node in client_connections: 
             data = node.recv(recv_limit)
             header, claim = jwt.verify_jwt(data, self.key, ['PS256']) 
             if previous is None: 
@@ -76,9 +82,12 @@ class Node:
         # TODO verfify that the message is written correctly to a standard or make a template 
         
     def tick(self): 
+        self.connect_to_neighbors()
         self._client_tick()
         if self.change_flag:
             self.socket.send(str(self.new_topic))
             self.new_topic = {}
+        time.sleep(10)
+        self.tick() # Enters a recursive loop every ten seconds
 
 
